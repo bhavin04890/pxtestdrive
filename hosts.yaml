@@ -1,0 +1,42 @@
+all:
+  vars:
+   ansible_user: 'portworx'
+   ansible_ssh_pass: 'Password1'
+   ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
+  hosts:
+    node1:
+      ansible_host: 10.0.0.1
+      ip: 10.0.0.1
+      access_ip: 10.0.0.1
+    node2:
+      ansible_host: 10.0.0.2
+      ip: 10.0.0.2
+      access_ip: 10.0.0.2
+    node3:
+      ansible_host: 10.0.0.3
+      ip: 10.0.0.3
+      access_ip: 10.0.0.3
+    node4:
+      ansible_host: 10.0.0.4
+      ip: 10.0.0.4
+      access_ip: 10.0.0.4
+  children:
+    kube_control_plane:
+      hosts:
+        node1:
+    kube_node:
+      hosts:
+        node2:
+        node3:
+        node4:
+    etcd:
+      hosts:
+        node1:
+        node2:
+        node3:
+    k8s_cluster:
+      children:
+        kube_control_plane:
+        kube_node:
+    calico_rr:
+      hosts: {}
