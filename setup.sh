@@ -3,6 +3,8 @@
 echo "--------------- Install Pre-reqs and Kubespray ---------------"
 apt-get install sshpass -y
 sleep 30
+apt-get install curl -y
+sleep 30
 apt-get install ansible -y
 sleep 30
 apt-get install python3 -y
@@ -45,8 +47,9 @@ cp inventory/testdrivecluster/artifacts/admin.conf $HOME/.kube/config
 mkdir /home/portworx/.kube/
 cp inventory/testdrivecluster/artifacts/admin.conf /home/portworx/.kube/config
 chmod 666 /home/portworx/.kube/config
+chown -R portworx:portworx /home/portworx/.kube/
 
-exit
+su portworx
 
 mkdir /home/portworx/testdrive-workspace
 mkdir /home/portworx/testdrive-workspace/example
@@ -64,49 +67,58 @@ echo "--------------- Portworx Enterprise Deployed ---------------"
 
 helm repo add portworx http://charts.portworx.io/ && helm repo update
 sleep 10
-helm install px-central portworx/px-central --namespace central --create-namespace --version 2.1.1 --set persistentStorage.enabled=true,persistentStorage.storageClassName="px-db",pxbackup.enabled=true
+wget https://raw.githubusercontent.com/bhavin04890/pxtestdrive/main/values-px-central.yaml
+helm install px-central portworx/px-central --namespace central --create-namespace --version 2.1.1 -f values-px-central.yaml
 
-#while true check 
-kubectl get po --namespace central -ljob-name=pxcentral-post-install-hook  -o wide | awk '{print $1, $3}' | grep -iv error
-sleep 360
+sleep 480
 
 echo "--------------- PX-Backup Deployed ---------------"
 
-wget https://raw.githubusercontent.com/bhavin04890/pxtestdrive/main/prometheus-operator.yaml
-sleep 3
-kubectl apply -f prometheus-operator.yaml
+VER=$(kubectl version --short | awk -Fv '/Server Version: / {print $3}')
+kubectl apply -f  "http://install.portworx.com/2.9/?comp=prometheus-operator&kbver=$VER"
+sleep 30
 
 wget https://raw.githubusercontent.com/bhavin04890/pxtestdrive/main/service-monitor.yaml
 kubectl apply -f service-monitor.yaml
+sleep 30
 
 wget https://raw.githubusercontent.com/bhavin04890/pxtestdrive/main/alertmanager.yaml
 kubectl create secret generic alertmanager-portworx --from-file=alertmanager.yaml -n central
+sleep 30
 
 wget https://raw.githubusercontent.com/bhavin04890/pxtestdrive/main/alertmanager-cluster.yaml
 kubectl apply -f alertmanager-cluster.yaml
+sleep 30
 
 wget https://raw.githubusercontent.com/bhavin04890/pxtestdrive/main/alertmanager-service.yaml
 kubectl apply -f alertmanager-service.yaml
+sleep 30
 
 wget https://raw.githubusercontent.com/bhavin04890/pxtestdrive/main/prometheus-rules.yaml
 kubectl apply -f prometheus-rules.yaml
+sleep 30
 
 wget https://raw.githubusercontent.com/bhavin04890/pxtestdrive/main/prometheus-cluster.yaml
 kubectl apply -f prometheus-cluster.yaml
+sleep 30
 
 wget https://raw.githubusercontent.com/bhavin04890/pxtestdrive/main/grafana-dashboard-config.yaml
 kubectl -n central create configmap grafana-dashboard-config --from-file=grafana-dashboard-config.yaml
+sleep 30
 
 wget https://raw.githubusercontent.com/bhavin04890/pxtestdrive/main/grafana-datasource.yaml
 kubectl -n central create configmap grafana-source-config --from-file=grafana-datasource.yaml
+sleep 30
 
 curl "https://docs.portworx.com/samples/k8s/pxc/portworx-cluster-dashboard.json" -o portworx-cluster-dashboard.json && \
 curl "https://docs.portworx.com/samples/k8s/pxc/portworx-node-dashboard.json" -o portworx-node-dashboard.json && \
 curl "https://docs.portworx.com/samples/k8s/pxc/portworx-volume-dashboard.json" -o portworx-volume-dashboard.json && \
 curl "https://docs.portworx.com/samples/k8s/pxc/portworx-etcd-dashboard.json" -o portworx-etcd-dashboard.json && \
 kubectl -n central create configmap grafana-dashboards --from-file=portworx-cluster-dashboard.json --from-file=portworx-node-dashboard.json --from-file=portworx-volume-dashboard.json --from-file=portworx-etcd-dashboard.json
+sleep 30
 
 wget https://raw.githubusercontent.com/bhavin04890/pxtestdrive/main/grafana.yaml
 kubectl apply -f grafana.yaml
+sleep 30
 
 echo "--------------- Monitoring Installed ---------------"
