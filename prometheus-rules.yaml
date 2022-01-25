@@ -1,0 +1,213 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    prometheus: portworx
+    role: prometheus-portworx-rulefiles
+  name: prometheus-portworx-rules-portworx.rules.yaml
+  namespace: central
+spec:
+  groups:
+  - name: portworx.rules
+    rules:
+    - alert: PortworxVolumeUsageCritical
+      annotations:
+        description: Portworx volume {{$labels.volumeid}} on {{$labels.host}} is over 80% used for
+          more than 10 minutes.
+        summary: Portworx volume capacity is at {{$value}}% used.
+      expr: 100 * (px_volume_usage_bytes / px_volume_capacity_bytes) > 80
+      for: 5m
+      labels:
+        issue: Portworx volume {{$labels.volumeid}} usage on {{$labels.host}} is high.
+        severity: critical
+    - alert: PortworxVolumeUsage
+      annotations:
+        description: Portworx volume {{$labels.volumeid}} on {{$labels.host}} is over 70% used for
+          more than 10 minutes.
+        summary: Portworx volume {{$labels.volumeid}} on {{$labels.host}} is at {{$value}}% used.
+      expr: 100 * (px_volume_usage_bytes / px_volume_capacity_bytes) > 70
+      for: 5m
+      labels:
+        issue: Portworx volume {{$labels.volumeid}} usage on {{$labels.host}} is critical.
+        severity: warning
+    - alert: PortworxStorageUsageCritical
+      annotations:
+        description: Portworx storage {{$labels.volumeid}} on {{$labels.host}} is over 80% used
+          for more than 10 minutes.
+        summary: Portworx storage capacity is at {{$value}}% used.
+      expr: 100 * (1 - px_cluster_disk_utilized_bytes / px_cluster_disk_total_bytes)
+        < 20
+      for: 5m
+      labels:
+        issue: Portworx storage {{$labels.volumeid}} usage on {{$labels.host}} is high.
+        severity: critical
+    - alert: PortworxStorageUsage
+      annotations:
+        description: Portworx storage {{$labels.volumeid}} on {{$labels.host}} is over 70% used
+          for more than 10 minutes.
+        summary: Portworx storage {{$labels.volumeid}} on {{$labels.host}} is at {{$value}}% used.
+      expr: 100 * (1 - (px_cluster_disk_utilized_bytes / px_cluster_disk_total_bytes))
+        < 30
+      for: 5m
+      labels:
+        issue: Portworx storage {{$labels.volumeid}} usage on {{$labels.host}} is critical.
+        severity: warning
+    - alert: PortworxStorageWillFill
+      annotations:
+        description: Portworx storage {{$labels.volumeid}} on {{$labels.host}} is over 70% full
+          and has been predicted to fill within 2 weeks for more than 10 minutes.
+        summary: Portworx storage {{$labels.volumeid}} on {{$labels.host}} is over 70% full and
+          is predicted to fill within 2 weeks.
+      expr: (100 * (1 - (px_cluster_disk_utilized_bytes / px_cluster_disk_total_bytes)))
+        < 30 and predict_linear(px_cluster_disk_available_bytes[1h], 14 * 86400) <
+        0
+      for: 10m
+      labels:
+        issue: Portworx storage {{$labels.volumeid}} on {{$labels.host}} is predicted to fill within
+          2 weeks.
+        severity: warning
+    - alert: PortworxStorageNodeDown
+      annotations:
+        description: Portworx Storage Node has been offline for more than 5 minutes.
+        summary: Portworx Storage Node is Offline.
+      expr: max(px_cluster_status_nodes_storage_down) > 0
+      for: 5m
+      labels:
+        issue: Portworx Storage Node is Offline.
+        severity: critical
+    - alert: PortworxQuorumUnhealthy
+      annotations:
+        description: Portworx cluster Quorum Unhealthy for more than 5 minutes.
+        summary: Portworx Quorum Unhealthy.
+      expr: max(px_cluster_status_cluster_quorum) > 1
+      for: 5m
+      labels:
+        issue: Portworx Quorum Unhealthy.
+        severity: critical
+    - alert: PortworxMemberDown
+      annotations:
+        description: Portworx cluster member(s) has(have) been down for more than
+          5 minutes.
+        summary: Portworx cluster member(s) is(are) down.
+      expr: (max(px_cluster_status_cluster_size) - count(px_cluster_status_cluster_size))
+        > 0
+      for: 5m
+      labels:
+        issue: Portworx cluster member(s) is(are) down.
+        severity: critical
+    - alert: AutopilotDeclinedActions
+      annotations:
+        description: Autopilot declined to perform an action.
+        summary: Autopilot action has been declined.
+      expr: autopilot_action_failed_count{state="declined"}
+        > 0
+      for: 2m
+      labels:
+        issue: Autopilot action has been declined.
+        severity: critical
+    - alert: AutopilotFailedActions
+      annotations:
+        description: Autopilot failed to perform an action.
+        summary: Autopilot failed to perform an action.
+      expr: autopilot_action_failed_count{state="failed"}
+        > 0
+      for: 5m
+      labels:
+        issue: Autopilot failed to perform an action.
+        severity: critical
+    - alert: PXBackupError
+      annotations:
+        description: Failed to take backup for volume {{$labels.volumename}} with error {{$labels.error_string}}.
+        summary: Failed to take backup for volume {{$labels.volumename}}.
+      expr: px_backup_stats_status == 2
+      labels:
+        issue: Cloudsnap backup error.
+        severity: warning
+    - alert: PXKvdbNodeViewUnhealthy
+      annotations:
+        description: Portworx node {{$labels.node_id}} from cluster {{$labels.cluster}} is unable to talk to kvdb. Please check the KVDB health and node's connection to KVDB.
+        summary: Portworx node {{$labels.node_id}} is unable to talk to kvdb.
+      expr: px_kvdb_health_state_node_view == 2
+      labels:
+        issue: Portworx node {{$labels.node_id}} is unable to talk to kvdb.
+        severity: critical
+    - alert: PXKvdbClusterViewUnhealthy
+      annotations:
+        description: Portworx node {{$labels.node_id}} from cluster {{$labels.cluster}} is reporting that the cluster is unable to talk to kvdb. Please check KVDB health and the node's connection to KVDB and the other nodes in the cluster.
+        summary: Portworx cluster {{$labels.cluster}} is unable to talk to kvdb.
+      expr: px_kvdb_health_state_cluster_view == 2
+      labels:
+        issue: Portworx cluster {{$labels.cluster}} is unable to talk to kvdb.
+        severity: critical
+  - name: Portworx PoolResize Alerts
+    rules:
+    - alert: PoolExpandSuccessful
+      annotations:
+        description: Pool {{$labels.POOL}} from node {{$labels.instance}}, from Portworx cluster {{$labels.clusterid}} successfully expanded.
+        summary: Portworx pool {{$labels.POOL}} successfully expanded.
+      expr: px_alerts_poolexpandsuccessful > 1
+      labels:
+        issue: Portworx pool expand successful.
+        severity: warning
+    - alert: PoolExpandFailure
+      annotations:
+        description: Pool expansion for pool {{$labels.POOL}} from node {{$labels.instance}}, from Portworx cluster {{$labels.clusterid}} failed. Please check Portworx alerts for more details.
+        summary: Pool expansion for pool {{$labels.POOL}} failed.
+      expr: px_alerts_poolexpandfailed > 1
+      labels:
+        issue: Portworx pool expand failure.
+        severity: critical
+  - name: Portworx VolumeResize Alerts
+    rules:
+    - alert: VolumeResizeSuccessful
+      annotations:
+        description: Portworx volume {{$labels.volumeid}} from cluster {{$labels.clusterid}} successfully resized.
+        summary: Portworx volume {{$labels.volumeid}} successfully resized.
+      expr: px_alerts_volumeresizesuccessful == 1
+      labels:
+        issue: Portworx volume resize successful.
+        severity: warning
+    - alert: VolumeResizeDeferred
+      annotations:
+        description: Volume resize for volume {{$labels.volumeid}} from Portworx cluster {{$labels.clusterid}} deferred. Please check Portworx alerts for more details.
+        summary: Volume resize for volume {{$labels.volumeid}} deferred.
+      expr: px_alerts_volumeresizedeferred == 1
+      labels:
+        issue: Portworx volume resize deferred.
+        severity: warning
+    - alert: VolumeResizeFailed
+      annotations:
+        description: Volume resize for volume {{$labels.volumeid}} from Portworx cluster {{$labels.clusterid}} failed. Please check Portworx alerts for more details.
+        summary: Volume resize for volume {{$labels.volumeid}} failed.
+      expr: px_alerts_volumeresizefailed == 1
+      labels:
+        issue: Portworx volume resize failure.
+        severity: critical
+  - name: Portworx License Alerts
+    rules:
+    - alert: PortworxLicenseExpiry
+      # Tuneable license-expiry alert, reported by each node individually, works for both regular and floating licenses.
+      # - note: if #days drops into negative, the license has already expired
+      annotations:
+        description: Portworx node {{$labels.node}} of cluster {{$labels.cluster}} reports its license (or license lease) expiring in {{$value}} days.
+        summary: Portworx license (or license lease) expiring in {{$value}} days.
+      expr: px_node_status_license_expiry < 5
+      labels:
+        issue: Portworx license (or license lease) expiring.
+        severity: warning
+    - alert: PortworxLicenseServerDown
+      annotations:
+        description: Portworx license server is unreachable. Please check license server health and connection to license server.
+        summary: Portworx instance {{$labels.instance}} is not able to reach the license server.
+      expr: px_alerts_licenseserverdown > 0
+      labels:
+        issue: Portworx license server is unreachable
+        severity: warning
+    - alert: PortworxLicenseSetupError
+      annotations:
+        description: Failed to set up Portworx license on {{$labels.instance}}. Please check licenses and/or license server.
+        summary: Failed to set up Portworx license on {{$labels.instance}}.
+      expr: px_alerts_floatinglicensesetuperror > 0
+      labels:
+        issue: Error setting up Portworx license
+        severity: critical
