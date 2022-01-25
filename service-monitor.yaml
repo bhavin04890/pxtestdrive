@@ -1,7 +1,7 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  namespace: central
+  namespace: kube-system
   name: portworx-prometheus-sm
   labels:
     name: portworx-prometheus-sm
@@ -19,7 +19,7 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: autopilot-prometheus-sm
-  namespace: central
+  namespace: kube-system
   labels:
     name: portworx-prometheus-sm
 spec:
