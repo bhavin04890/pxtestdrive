@@ -1,3 +1,6 @@
+#!/bin/bash
+
+echo "--------------- Install Pre-reqs and Kubespray ---------------"
 apt-get install sshpass -y
 sleep 30
 apt-get install ansible -y
@@ -29,6 +32,9 @@ wget https://raw.githubusercontent.com/bhavin04890/pxtestdrive/main/cluster.yaml
 sleep 3
 ansible-playbook -i /root/portworx-setup/kubespray/inventory/testdrivecluster/hosts.yaml --become --become-user=root cluster.yaml --extra-vars "ansible_sudo_pass=Password1"
 sleep 1080
+
+echo "--------------- Kubernetes Installed ---------------"
+
 snap install kubectl --classic
 sleep 30
 snap install helm --classic
@@ -54,6 +60,8 @@ sleep 10
 kubectl apply -f 'https://install.portworx.com/2.9?operator=true&mc=false&kbver=&b=true&s=%2Fdev%2Fsdb&j=auto&c=px-cluster&stork=true&csi=true&tel=false&st=k8s'
 sleep 480
 
+echo "--------------- Portworx Enterprise Deployed ---------------"
+
 helm repo add portworx http://charts.portworx.io/ && helm repo update
 sleep 10
 helm install px-central portworx/px-central --namespace central --create-namespace --version 2.1.1 --set persistentStorage.enabled=true,persistentStorage.storageClassName="px-db",pxbackup.enabled=true
@@ -61,6 +69,8 @@ helm install px-central portworx/px-central --namespace central --create-namespa
 #while true check 
 kubectl get po --namespace central -ljob-name=pxcentral-post-install-hook  -o wide | awk '{print $1, $3}' | grep -iv error
 sleep 360
+
+echo "--------------- PX-Backup Deployed ---------------"
 
 wget https://raw.githubusercontent.com/bhavin04890/pxtestdrive/main/prometheus-operator.yaml
 sleep 3
@@ -98,3 +108,5 @@ kubectl -n central create configmap grafana-dashboards --from-file=portworx-clus
 
 wget https://raw.githubusercontent.com/bhavin04890/pxtestdrive/main/grafana.yaml
 kubectl apply -f grafana.yaml
+
+echo "--------------- Monitoring Installed ---------------"
