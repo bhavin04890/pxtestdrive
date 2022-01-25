@@ -2,7 +2,7 @@
   kind: Service
   metadata:
     name: alertmanager-portworx
-    namespace: central
+    namespace: kube-system
   spec:
     type: NodePort
     ports:
