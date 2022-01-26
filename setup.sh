@@ -122,3 +122,35 @@ kubectl apply -f grafana.yaml
 sleep 30
 
 echo "--------------- Monitoring Installed ---------------"
+
+
+mkdir /etc/vmware-tools/scripts/resume-vm-default-d
+cd /etc/vmware-tools/scripts/resume-vm-default-d/
+wget https://raw.githubusercontent.com/bhavin04890/pxtestdrive/main/resumePX.sh
+
+sleep 5
+
+cd /home/portworx/testdrive-workspace/testdrive-guide
+wget https://raw.githubusercontent.com/bhavin04890/pxtestdrive/main/stylesheet.css
+wget https://raw.githubusercontent.com/bhavin04890/pxtestdrive/main/index.html
+wget https://raw.githubusercontent.com/bhavin04890/pxtestdrive/main/copying.js
+
+sleep 5
+cd /home/portworx/testdrive-workspace/example
+
+wget https://raw.githubusercontent.com/bhavin04890/pxtestdrive/main/lab-ready.sh 
+wget https://raw.githubusercontent.com/bhavin04890/pxtestdrive/main/pvc-from-snap.yaml
+wget https://raw.githubusercontent.com/bhavin04890/pxtestdrive/main/k8s-webapp.yaml
+wget https://raw.githubusercontent.com/bhavin04890/pxtestdrive/main/pg-snapshot.yaml
+wget https://raw.githubusercontent.com/bhavin04890/pxtestdrive/main/postgres-db-restore.yaml
+wget https://raw.githubusercontent.com/bhavin04890/pxtestdrive/main/postgres-db.yaml
+
+kubectl apply -f postgres-db.yaml
+sleep 30
+kubectl apply -f k8s-webapp.yaml
+sleep 30 
+
+chmod 777 lab-ready.sh
+bash lab-ready.sh
+
+echo "--------------- Assets downloaded ---------------"
