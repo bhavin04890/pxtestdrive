@@ -26,7 +26,7 @@ done
 
 
 while true; do
-    NUM_READY=`kubectl get po -n central -l app=grafana -o wide | grep Running | grep 1/1 | wc -l`
+    NUM_READY=`kubectl get po -n kube-system -l app=grafana -o wide | grep Running | grep 1/1 | wc -l`
     if [ "${NUM_READY}" == "1" ]; then
         echo "All portworx monitoring nodes are ready !"
         break
