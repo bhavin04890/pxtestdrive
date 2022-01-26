@@ -1,0 +1,47 @@
+.buttonpad {
+ padding-bottom: 20px;
+}
+.px-button {
+  background-color: #FF5000;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin-botton: 10px;
+  cursor: pointer;
+}
+.mainbucket {
+  float: left;
+  left: 0;
+  width: 100%;
+  margin:0;
+  padding:0;
+}
+.copied {
+  position: fixed;
+  right: 0;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  padding-right: 100px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+  font-weight: bolder;
+  float: right;
+}
+body {
+	background-color: #f1f1f2;
+}
+
+h5 {
+	font-weight: bold;
+	font-size: 20px;
+	color: #414042;
+}
+
+code {
+	color: #414042;
+}
