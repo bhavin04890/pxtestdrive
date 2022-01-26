@@ -83,7 +83,7 @@ kubectl apply -f service-monitor.yaml
 sleep 30
 
 wget https://raw.githubusercontent.com/bhavin04890/pxtestdrive/main/alertmanager.yaml
-kubectl create secret generic alertmanager-portworx --from-file=alertmanager.yaml -n central
+kubectl create secret generic alertmanager-portworx --from-file=alertmanager.yaml -n kube-system
 sleep 30
 
 wget https://raw.githubusercontent.com/bhavin04890/pxtestdrive/main/alertmanager-cluster.yaml
@@ -103,18 +103,18 @@ kubectl apply -f prometheus-cluster.yaml
 sleep 30
 
 wget https://raw.githubusercontent.com/bhavin04890/pxtestdrive/main/grafana-dashboard-config.yaml
-kubectl -n central create configmap grafana-dashboard-config --from-file=grafana-dashboard-config.yaml
+kubectl -n kube-system create configmap grafana-dashboard-config --from-file=grafana-dashboard-config.yaml
 sleep 30
 
 wget https://raw.githubusercontent.com/bhavin04890/pxtestdrive/main/grafana-datasource.yaml
-kubectl -n central create configmap grafana-source-config --from-file=grafana-datasource.yaml
+kubectl -n kube-system create configmap grafana-source-config --from-file=grafana-datasource.yaml
 sleep 30
 
 curl "https://docs.portworx.com/samples/k8s/pxc/portworx-cluster-dashboard.json" -o portworx-cluster-dashboard.json && \
 curl "https://docs.portworx.com/samples/k8s/pxc/portworx-node-dashboard.json" -o portworx-node-dashboard.json && \
 curl "https://docs.portworx.com/samples/k8s/pxc/portworx-volume-dashboard.json" -o portworx-volume-dashboard.json && \
 curl "https://docs.portworx.com/samples/k8s/pxc/portworx-etcd-dashboard.json" -o portworx-etcd-dashboard.json && \
-kubectl -n central create configmap grafana-dashboards --from-file=portworx-cluster-dashboard.json --from-file=portworx-node-dashboard.json --from-file=portworx-volume-dashboard.json --from-file=portworx-etcd-dashboard.json
+kubectl -n kube-system create configmap grafana-dashboards --from-file=portworx-cluster-dashboard.json --from-file=portworx-node-dashboard.json --from-file=portworx-volume-dashboard.json --from-file=portworx-etcd-dashboard.json
 sleep 30
 
 wget https://raw.githubusercontent.com/bhavin04890/pxtestdrive/main/grafana.yaml
