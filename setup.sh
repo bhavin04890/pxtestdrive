@@ -48,8 +48,8 @@ mkdir /home/portworx/.kube/
 cp inventory/testdrivecluster/artifacts/admin.conf /home/portworx/.kube/config
 chmod 666 /home/portworx/.kube/config
 chown -R portworx:portworx /home/portworx/.kube/
-
-su portworx
+chmod 666 $HOME/.kube/config
+chown -R root:root /home/portworx/.kube/
 
 mkdir /home/portworx/testdrive-workspace
 mkdir /home/portworx/testdrive-workspace/example
