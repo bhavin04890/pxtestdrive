@@ -33,7 +33,7 @@ sleep 3
 wget https://raw.githubusercontent.com/bhavin04890/pxtestdrive/main/cluster.yaml
 sleep 3
 ansible-playbook -i /root/portworx-setup/kubespray/inventory/testdrivecluster/hosts.yaml --become --become-user=root cluster.yaml --extra-vars "ansible_sudo_pass=Password1"
-sleep 1080
+sleep 900
 
 echo "--------------- Kubernetes Installed ---------------"
 
